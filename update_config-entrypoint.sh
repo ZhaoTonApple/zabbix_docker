@@ -29,16 +29,13 @@ init() {
 sed -i -e "/:centos-/s/:centos-.*/:centos-${GV_VERSION}/" docker-compose_v6_0_x_centos_mysql_local.yaml
 chmod 755 -R ./
 option=$(cat /etc/redhat-release | cut -c 22)
-if [ ! -n "${option}" ]; then
+if [[ " " == "${option}" ]]; then
 	option=$(cat /etc/redhat-release | cut -c 23)
 fi
 case ${option} in
     8)
     echo "Centos 8 catch!"
     if [ ! -d "/etc/yum.repos.d/bak/" ]; then
-        mkdir /etc/yum.repos.d/bak/
-        mv /etc/yum.repos.d/* /etc/yum.repos.d/bak/
-        tar -zxvf ./patch/repos.tar.gz -C /etc/yum.repos.d/
         yum install -y yum-utils \
             device-mapper-persistent-data \
             lvm2
