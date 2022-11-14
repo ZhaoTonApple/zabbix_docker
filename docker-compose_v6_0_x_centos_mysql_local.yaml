@@ -5,7 +5,7 @@ services:
    context: ./Dockerfiles/build-base/centos
    cache_from:
     - centos:centos8
-  image: zabbix-build-base:centos-6.0.9
+  image: zabbix-build-base:centos-6.0-latest
   profiles:
    - build
 
@@ -15,8 +15,8 @@ services:
    cache_from:
     - centos:centos8
    args:
-    BUILD_BASE_IMAGE: zabbix-build-base:centos-6.0.9
-  image: zabbix-build-mysql:centos-6.0.9
+    BUILD_BASE_IMAGE: zabbix-build-base:centos-6.0-latest
+  image: zabbix-build-mysql:centos-6.0-latest
   profiles:
    - build
   depends_on:
@@ -28,8 +28,8 @@ services:
    cache_from:
     - centos:centos8
    args:
-    BUILD_BASE_IMAGE: zabbix-build-mysql:centos-6.0.9
-  image: zabbix-server-mysql:centos-6.0.9
+    BUILD_BASE_IMAGE: zabbix-build-mysql:centos-6.0-latest
+  image: zabbix-server-mysql:centos-6.0-latest
   restart: always
   profiles:
    - make5
@@ -105,8 +105,8 @@ services:
    cache_from:
     - centos:centos8
    args:
-    BUILD_BASE_IMAGE: zabbix-build-mysql:centos-6.0.9
-  image: zabbix-proxy-mysql:centos-6.0.9
+    BUILD_BASE_IMAGE: zabbix-build-mysql:centos-6.0-latest
+  image: zabbix-proxy-mysql:centos-6.0-latest
   profiles:
    - make5
    - make6
@@ -172,10 +172,11 @@ services:
    cache_from:
     - centos:centos8
    args:
-    BUILD_BASE_IMAGE: zabbix-build-mysql:centos-6.0.9
-  image: zabbix-web-nginx-mysql:centos-6.0.9
+    BUILD_BASE_IMAGE: zabbix-build-mysql:centos-6.0-latest
+  image: zabbix-web-nginx-mysql:centos-6.0-latest
   restart: always
   profiles:
+   - zabbix-web-nginx-mysql
    - make5
    - make6
    - start5
@@ -239,8 +240,8 @@ services:
    cache_from:
     - centos:centos8
    args:
-    BUILD_BASE_IMAGE: zabbix-build-mysql:centos-6.0.9
-  image: zabbix-agent2:centos-6.0.9
+    BUILD_BASE_IMAGE: zabbix-build-mysql:centos-6.0-latest
+  image: zabbix-agent2:centos-6.0-latest
   restart: always
   profiles:
    - make5
@@ -293,8 +294,8 @@ services:
    cache_from:
     - centos:centos8
    args:
-    BUILD_BASE_IMAGE: zabbix-build-mysql:centos-6.0.9
-  image: zabbix-java-gateway:centos-6.0.9
+    BUILD_BASE_IMAGE: zabbix-build-mysql:centos-6.0-latest
+  image: zabbix-java-gateway:centos-6.0-latest
   restart: always
   profiles:
    - make5
@@ -335,7 +336,7 @@ services:
    context: ./Dockerfiles/snmptraps/centos
    cache_from:
     - centos:centos8
-  image: zabbix-snmptraps:centos-6.0.9
+  image: zabbix-snmptraps:centos-6.0-latest
   restart: always
   profiles:
    - make5
@@ -374,8 +375,8 @@ services:
    cache_from:
     - centos:centos8
    args:
-    BUILD_BASE_IMAGE: zabbix-build-mysql:centos-6.0.9
-  image: zabbix-web-service:centos-6.0.9
+    BUILD_BASE_IMAGE: zabbix-build-mysql:centos-6.0-latest
+  image: zabbix-web-service:centos-6.0-latest
   restart: always
   profiles:
    - make6

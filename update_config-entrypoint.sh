@@ -19,14 +19,14 @@ set +e
 # Script trace mode
 set -o xtrace
 
-GV_VERSION=$(cat ./patch/.version)
+GV_VERSION_DOCKER=$(cat ./patch/.version_docker)
 
 help() {
 	awk -F'### ' '/^###/ { print $2 }' "$0"
 }
 
 init() {
-sed -i -e "/:centos-/s/:centos-.*/:centos-${GV_VERSION}/" docker-compose_v6_0_x_centos_mysql_local.yaml
+sed -i -e "/:centos-/s/:centos-.*/:centos-${GV_VERSION_DOCKER}/" docker-compose_v6_0_x_centos_mysql_local.yaml
 chmod 755 -R ./
 option=$(cat /etc/redhat-release | cut -c 22)
 if [[ " " == "${option}" ]]; then
@@ -91,7 +91,7 @@ elif [ $# -ge 1 ]; then
     fi
       
     if [[ "$1" == "start" ]]; then
-        option=$(echo ${GV_VERSION} | cut -c 1)
+        option=$(echo ${GV_VERSION_DOCKER} | cut -c 1)
         case ${option} in
             5)
             echo "zabbix 5 LTSC!"
