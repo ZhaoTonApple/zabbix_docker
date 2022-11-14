@@ -75,6 +75,7 @@ if [ ! -f "/usr/local/bin/docker-compose" ]; then
     \cp ./patch/docker-compose-linux-x86_64 /usr/local/bin/docker-compose
     chmod +x /usr/local/bin/docker-compose
 fi
+systemctl enable docker
 }
 
 
