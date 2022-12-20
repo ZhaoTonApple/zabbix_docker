@@ -4,10 +4,11 @@
 ###
 ### Usage:
 ###
-###    sh update_config-entrypoint.sh [start|stop|restart|rm]
+###    sh update_config-entrypoint.sh [update]
 ###
 ###
 ### Options:
+###   update      Config dockerfiles
 ###   help        Show this message.
 
 # 设置了这个选项以后，包含管道命令的语句的返回值，会变成最后一个返回非零的管道命令的返回值。
@@ -19,14 +20,27 @@ set +e
 # Script trace mode
 set -o xtrace
 
+GV_VERSION=$(cat ./patch/.version)
 GV_VERSION_DOCKER=$(cat ./patch/.version_docker)
+BUILD_CONFIG="./build.sh"
+ZABBIX_BUILD_BASE="./Dockerfiles/build-base/centos/Dockerfile"
+ZABBIX_BUILD_MYSQL="./Dockerfiles/build-mysql/centos/Dockerfile"
+ZABBIX_SERVER_MYSQL="./Dockerfiles/server-mysql/centos/Dockerfile"
+ZABBIX_SERVER_MYSQL_ENTRYPOINT="./Dockerfiles/server-mysql/centos/docker-entrypoint.sh"
+WEB_NGINX_MYSQL="./Dockerfiles/web-nginx-mysql/centos/Dockerfile"
+ZABBIX_AGENT2="./Dockerfiles/agent2/centos/Dockerfile"
+ZABBIX_SNMPTRAPS="./Dockerfiles/snmptraps/centos/Dockerfile"
+ZABBIX_JAVA_GATEWAY="./Dockerfiles/java-gateway/centos/Dockerfile"
+ZABBIX_PROXY_MYSQL="./Dockerfiles/proxy-mysql/centos/Dockerfile"
+ZABBIX_WEB_SERVICE="./Dockerfiles/web-service/centos/Dockerfile"
 
 help() {
-	awk -F'### ' '/^###/ { print $2 }' "$0"
+    awk -F'### ' '/^###/ { print $2 }' "$0"
 }
 
 init() {
 sed -i -e "/:centos-/s/:centos-.*/:centos-${GV_VERSION_DOCKER}/" docker-compose_v6_0_x_centos_mysql_local.yaml
+sed -i -e "/version=\${version:-/s/-.*/-\"${GV_VERSION_DOCKER}\"}/" $BUILD_CONFIG
 chmod 755 -R ./
 option=$(cat /etc/redhat-release | cut -c 22)
 if [[ " " == "${option}" ]]; then
@@ -36,6 +50,9 @@ case ${option} in
     8)
     echo "Centos 8 catch!"
     if [ ! -d "/etc/yum.repos.d/bak/" ]; then
+#        mkdir /etc/yum.repos.d/bak/
+#        mv /etc/yum.repos.d/* /etc/yum.repos.d/bak/
+#        tar -zxvf ./patch/repos.tar.gz -C /etc/yum.repos.d/
         yum install -y yum-utils \
             device-mapper-persistent-data \
             lvm2
@@ -44,6 +61,7 @@ case ${option} in
             https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/docker-ce.repo
         yum -y install docker-ce docker-ce-cli containerd.io --allowerasing
         yum -y install git
+        \cp ./trans/create_server_${GV_VERSION_DOCKER}.sql.gz ./patch/create_server.sql.gz
     fi
     ;;
     7)
@@ -56,6 +74,7 @@ case ${option} in
             https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/docker-ce.repo
         yum -y install docker-ce docker-ce-cli containerd.io
         yum -y install git
+        \cp ./trans/create_server_${GV_VERSION_DOCKER}.sql.gz ./patch/create_server.sql.gz
     ;;
     *)
     echo "Nothing to do"
@@ -70,12 +89,225 @@ cat > /etc/docker/daemon.json << EOF
 EOF
 service docker restart
 chmod 777 /var/run/docker.sock
+update_config_var $ZABBIX_BUILD_BASE "# syntax=docker/dockerfile:1" "## syntax=docker/dockerfile:1"
 if [ ! -f "/usr/local/bin/docker-compose" ]; then
     # curl -SL https://github.com/docker/compose/releases/download/v2.3.3/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
     \cp ./patch/docker-compose-linux-x86_64 /usr/local/bin/docker-compose
     chmod +x /usr/local/bin/docker-compose
 fi
-systemctl enable docker
+}
+
+zabbix_build_base() {
+update_config_var $ZABBIX_BUILD_BASE "# syntax=docker/dockerfile:1" "## syntax=docker/dockerfile:1"
+if [ ! -f "./Dockerfiles/build-base/centos/go1.17.2.linux-amd64.tar.gz" ]; then
+    \cp ./patch/go1.17.2.linux-amd64.tar.gz ./Dockerfiles/build-base/centos/
+fi
+if [ ! -f "./Dockerfiles/build-base/centos/repos.tar.gz" ]; then
+    \cp ./patch/repos.tar.gz ./Dockerfiles/build-base/centos/
+fi
+sed -i -e "/^ADD/,+2d" "$ZABBIX_BUILD_BASE"
+sed -i '/RUN/i ADD go1.17.2.linux-amd64.tar.gz /usr/local/\nADD repos.tar.gz /etc/yum.repos.d/\n' $ZABBIX_BUILD_BASE
+sed -i -e "/^    case/,+24d" "$ZABBIX_BUILD_BASE"
+}
+
+zabbix_build_mysql() {
+update_config_var $ZABBIX_BUILD_MYSQL "# syntax=docker/dockerfile:1" "## syntax=docker/dockerfile:1"
+sed -i -e "/^ADD/,+1d" "$ZABBIX_BUILD_MYSQL"
+if [ ! -f "./Dockerfiles/build-mysql/centos/zabbix-${GV_VERSION}.tar.gz" ]; then
+    \cp ./patch/zabbix-${GV_VERSION}.tar.gz ./Dockerfiles/build-mysql/centos/
+    \cp ./patch/create_server.sql.gz ./Dockerfiles/build-mysql/centos/
+fi
+sed -i -e "/^    go/d" "$ZABBIX_BUILD_MYSQL"
+sed -i -e "/^ADD/,+1d" "$ZABBIX_BUILD_MYSQL"
+sed -i -e "/^ADD/,+1d" "$ZABBIX_BUILD_MYSQL"
+sed -i -e "/^    git -c/d" "$ZABBIX_BUILD_MYSQL"
+sed -i "/RUN/i ADD zabbix-${GV_VERSION}.tar.gz /tmp/\n" $ZABBIX_BUILD_MYSQL
+sed -i '/RUN/i ADD create_server.sql.gz /tmp/\n' $ZABBIX_BUILD_MYSQL
+sed -i '/    cp \/tmp\/create_server.sql.gz/d' $ZABBIX_BUILD_MYSQL
+sed -i '/    strip \/tmp\/zabbix-\${ZBX_VERSION}\/src\/zabbix_agent\/zabbix_agentd \&\& \\/i\    cp /tmp/create_server.sql.gz database/mysql/create_server.sql.gz && \\' $ZABBIX_BUILD_MYSQL
+sed -i '/.\/configure \\/i\    go env -w GOPROXY=https://goproxy.cn && \\' $ZABBIX_BUILD_MYSQL
+}
+
+zabbix_server_mysql() {
+if [ ! -f "./Dockerfiles/server-mysql/centos/zbx_db_partitiong.sql" ]; then
+    \cp ./patch/zbx_db_partitiong.sql ./Dockerfiles/server-mysql/centos/
+fi
+if [ ! -f "./Dockerfiles/server-mysql/centos/repos.tar.gz" ]; then
+    \cp ./patch/repos.tar.gz ./Dockerfiles/server-mysql/centos/
+fi
+update_config_var $ZABBIX_SERVER_MYSQL "# syntax=docker/dockerfile:1" "## syntax=docker/dockerfile:1"
+sed -i -e "/^ADD/,+2d" "$ZABBIX_SERVER_MYSQL"
+sed -i '/STOPSIGNAL SIGTERM/i ADD repos.tar.gz /etc/yum.repos.d/\nADD zbx_db_partitiong.sql /tmp/\n' $ZABBIX_SERVER_MYSQL
+sed -i -e "250,350{/^    mysql --silent/,+9d}" $ZABBIX_SERVER_MYSQL_ENTRYPOINT
+var_value_01="    mysql --silent --skip-column-names \\"
+var_value_02="                --default-character-set=utf8mb4 \\"
+var_value_03="                -h \${DB_SERVER_HOST} -P \${DB_SERVER_PORT} \\"
+var_value_04="                -u \${DB_SERVER_ROOT_USER} \$ssl_opts \\"
+var_value_05="                \${DB_SERVER_DBNAME} < /tmp/zbx_db_partitiong.sql"
+var_value_06="    mysql_query \"use zabbix;SHOW VARIABLES LIKE 'event_scheduler';\" 1>/dev/null"
+var_value_07="    mysql_query \"use zabbix;CREATE EVENT zbx_partitioning ON SCHEDULE EVERY 12 HOUR DO CALL partition_maintenance_all('zabbix');\" 1>/dev/null"
+var_value_08="    mysql_query \"use zabbix;SELECT * FROM INFORMATION_SCHEMA.events\G;\" 1>/dev/null"
+var_value_09="    mysql_query \"use zabbix;CALL partition_maintenance_all('zabbix');\" 1>/dev/null"
+var_value_10="    mysql_query \"use zabbix;show create table history\G;\" 1>/dev/null"
+var_value_01=$(escape_spec_char "$var_value_01")
+var_value_02=$(escape_spec_char "$var_value_02")
+var_value_03=$(escape_spec_char "$var_value_03")
+var_value_04=$(escape_spec_char "$var_value_04")
+var_value_05=$(escape_spec_char "$var_value_05")
+var_value_06=$(escape_spec_char "$var_value_06")
+var_value_07=$(escape_spec_char "$var_value_07")
+var_value_08=$(escape_spec_char "$var_value_08")
+var_value_09=$(escape_spec_char "$var_value_09")
+var_value_10=$(escape_spec_char "$var_value_10")
+NUMINDEX=$(sed -n -e '250,350{/unset MYSQL_PWD/=}' $ZABBIX_SERVER_MYSQL_ENTRYPOINT)
+sed -i "${NUMINDEX}i\\$var_value_10" $ZABBIX_SERVER_MYSQL_ENTRYPOINT
+sed -i "${NUMINDEX}i\\$var_value_09" $ZABBIX_SERVER_MYSQL_ENTRYPOINT
+sed -i "${NUMINDEX}i\\$var_value_08" $ZABBIX_SERVER_MYSQL_ENTRYPOINT
+sed -i "${NUMINDEX}i\\$var_value_07" $ZABBIX_SERVER_MYSQL_ENTRYPOINT
+sed -i "${NUMINDEX}i\\$var_value_06" $ZABBIX_SERVER_MYSQL_ENTRYPOINT
+sed -i "${NUMINDEX}i\\$var_value_05" $ZABBIX_SERVER_MYSQL_ENTRYPOINT
+sed -i "${NUMINDEX}i\\$var_value_04" $ZABBIX_SERVER_MYSQL_ENTRYPOINT
+sed -i "${NUMINDEX}i\\$var_value_03" $ZABBIX_SERVER_MYSQL_ENTRYPOINT
+sed -i "${NUMINDEX}i\\$var_value_02" $ZABBIX_SERVER_MYSQL_ENTRYPOINT
+sed -i "${NUMINDEX}i\\$var_value_01" $ZABBIX_SERVER_MYSQL_ENTRYPOINT
+}
+
+zabbix_web_nginx_mysql() {
+if [ ! -f "./Dockerfiles/web-nginx-mysql/centos/simkai.ttf" ]; then
+    \cp ./patch/simkai.ttf ./Dockerfiles/web-nginx-mysql/centos/
+fi
+if [ ! -f "./Dockerfiles/web-nginx-mysql/centos/repos.tar.gz" ]; then
+    \cp ./patch/repos.tar.gz ./Dockerfiles/web-nginx-mysql/centos/
+fi
+update_config_var $WEB_NGINX_MYSQL "# syntax=docker/dockerfile:1" "## syntax=docker/dockerfile:1"
+sed -i -e "/^ADD/,+2d" "$WEB_NGINX_MYSQL"
+sed -i '/STOPSIGNAL SIGTERM/i ADD repos.tar.gz /etc/yum.repos.d/\nADD simkai.ttf /usr/share/zabbix/assets/fonts/\n' $WEB_NGINX_MYSQL
+option=$(echo ${GV_VERSION} | cut -c 1)
+case ${option} in
+    5)
+    echo "zabbix 5 LTSC!"
+    sed -i '/.pki/ s/ \&\& \\//'  $WEB_NGINX_MYSQL
+    sed -i '/.pki/ s/$/ \&\& \\/'  $WEB_NGINX_MYSQL
+    sed -i "/ZBX_FONT_NAME/d" $WEB_NGINX_MYSQL
+    sed -i '/.pki/a \    sed -i \"/ZBX_FONT_NAME/s/DejaVuSans/simkai/\" /usr/share/zabbix/include/defines.inc.php' $WEB_NGINX_MYSQL
+    sed -i "/ZBX_GRAPH_FONT_NAME/d" Dockerfiles/web-nginx-mysql/centos/Dockerfile
+    sed -i '/.pki/a \    sed -i \"/ZBX_GRAPH_FONT_NAME/s/DejaVuSans/simkai/\" /usr/share/zabbix/include/defines.inc.php && \\' $WEB_NGINX_MYSQL
+    ;;
+    6)
+    echo "zabbix 6 LTSC!"
+    sed -i '/.pki/ s/ \&\& \\//'  $WEB_NGINX_MYSQL
+    sed -i '/.pki/ s/$/ \&\& \\/'  $WEB_NGINX_MYSQL
+    sed -i "/ZBX_FONT_NAME/d" $WEB_NGINX_MYSQL
+    sed -i '/.pki/a \    sed -i \"/ZBX_FONT_NAME/s/DejaVuSans/simkai/\" /usr/share/zabbix/include/defines.inc.php' $WEB_NGINX_MYSQL
+    sed -i "/ZBX_GRAPH_FONT_NAME/d" Dockerfiles/web-nginx-mysql/centos/Dockerfile
+    sed -i '/.pki/a \    sed -i \"/ZBX_GRAPH_FONT_NAME/s/DejaVuSans/simkai/\" /usr/share/zabbix/include/defines.inc.php && \\' $WEB_NGINX_MYSQL
+    ;;
+    *)
+    echo "Nothing to do"
+    ;;
+esac
+}
+
+zabbix_agent2() {
+if [ ! -f "./Dockerfiles/agent2/centos/repos.tar.gz" ]; then
+    \cp ./patch/repos.tar.gz ./Dockerfiles/agent2/centos/
+fi
+update_config_var $ZABBIX_AGENT2 "# syntax=docker/dockerfile:1" "## syntax=docker/dockerfile:1"
+sed -i -e "/^ADD/,+1d" "$ZABBIX_AGENT2"
+sed -i '/STOPSIGNAL SIGTERM/i ADD repos.tar.gz /etc/yum.repos.d/\n' $ZABBIX_AGENT2
+}
+
+zabbix_snmptraps() {
+if [ ! -f "./Dockerfiles/snmptraps/centos/repos.tar.gz" ]; then
+    \cp ./patch/repos.tar.gz ./Dockerfiles/snmptraps/centos/
+fi
+update_config_var $ZABBIX_SNMPTRAPS "# syntax=docker/dockerfile:1" "## syntax=docker/dockerfile:1"
+sed -i -e "/^ADD/,+1d" "$ZABBIX_SNMPTRAPS"
+sed -i '/STOPSIGNAL SIGTERM/i ADD repos.tar.gz /etc/yum.repos.d/\n' $ZABBIX_SNMPTRAPS
+}
+
+zabbix_java_gateway() {
+if [ ! -f "./Dockerfiles/java-gateway/centos/repos.tar.gz" ]; then
+    \cp ./patch/repos.tar.gz ./Dockerfiles/java-gateway/centos/
+fi
+update_config_var $ZABBIX_JAVA_GATEWAY "# syntax=docker/dockerfile:1" "## syntax=docker/dockerfile:1"
+sed -i -e "/^ADD/,+1d" "$ZABBIX_JAVA_GATEWAY"
+sed -i '/STOPSIGNAL SIGTERM/i ADD repos.tar.gz /etc/yum.repos.d/\n' $ZABBIX_JAVA_GATEWAY
+}
+
+zabbix_proxy_mysql() {
+if [ ! -f "./Dockerfiles/proxy-mysql/centos/repos.tar.gz" ]; then
+    \cp ./patch/repos.tar.gz ./Dockerfiles/proxy-mysql/centos/
+fi
+update_config_var $ZABBIX_PROXY_MYSQL "# syntax=docker/dockerfile:1" "## syntax=docker/dockerfile:1"
+sed -i -e "/^ADD/,+1d" "$ZABBIX_PROXY_MYSQL"
+sed -i '/STOPSIGNAL SIGTERM/i ADD repos.tar.gz /etc/yum.repos.d/\n' $ZABBIX_PROXY_MYSQL
+}
+
+zabbix_web_service() {
+if [ ! -f "./Dockerfiles/web-service/centos/repos.tar.gz" ]; then
+    \cp ./patch/repos.tar.gz ./Dockerfiles/web-service/centos/
+fi
+update_config_var $ZABBIX_WEB_SERVICE "# syntax=docker/dockerfile:1" "## syntax=docker/dockerfile:1"
+sed -i -e "/^ADD/,+1d" "$ZABBIX_WEB_SERVICE"
+sed -i '/STOPSIGNAL SIGTERM/i ADD repos.tar.gz /etc/yum.repos.d/\n' $ZABBIX_WEB_SERVICE
+}
+
+escape_spec_char() {
+    local var_value=$1
+
+    var_value="${var_value//\\/\\\\}"
+    var_value="${var_value//[$'\n']/}"
+    var_value="${var_value//\//\\/}"
+    var_value="${var_value//./\\.}"
+    var_value="${var_value//\*/\\*}"
+    var_value="${var_value//^/\\^}"
+    var_value="${var_value//\$/\\\$}"
+    var_value="${var_value//\&/\\\&}"
+    var_value="${var_value//\[/\\[}"
+    var_value="${var_value//\]/\\]}"
+
+    echo "$var_value"
+}
+
+update_config_var() {
+    local config_path=$1
+    local var_name=$2
+    local var_value=$3
+    
+
+    if [ ! -f "$config_path" ]; then
+        echo "**** Configuration file '$config_path' does not exist"
+        return
+    fi
+
+    # Remove configuration parameter definition in case of unset parameter value
+    if [ -z "$var_value" ]; then
+        sed -i -e "/^$var_name=/d" "$config_path"
+        echo "removed"
+        return
+    fi
+
+    # Remove value from configuration parameter in case of double quoted parameter value
+    if [ "$var_value" == '""' ]; then
+        sed -i -e "/^$var_name=/s/=.*/=/" "$config_path"
+        echo "undefined"
+        return
+    fi
+
+    # Escaping characters in parameter value and name
+    var_value=$(escape_spec_char "$var_value")
+    var_name=$(escape_spec_char "$var_name")
+    
+    if [ "$(grep -E "^$var_name =" $config_path)" ] && [ "$is_multiple" != "true" ]; then
+        sed -i -e "/^$var_name =/s/=.*/= $var_value/" "$config_path"
+        echo "updated $var_name = $var_value "
+    fi
+    
+    if [ "$(grep -E "^$var_name" $config_path)" ] && [ "$is_multiple" != "true" ]; then
+        sed -i -e "/^$var_name/s/$var_name/$var_value/" "$config_path"
+        echo "updated $var_name -> $var_value "
+    fi
 }
 
 
@@ -89,9 +321,63 @@ elif [ $# -ge 1 ]; then
         help
         exit 1
     fi
-      
+    
+    if [[ "$1" == "update" ]]; then
+        init
+        zabbix_build_base
+        zabbix_build_mysql
+        zabbix_server_mysql
+        zabbix_web_nginx_mysql
+        zabbix_agent2
+        zabbix_snmptraps
+        zabbix_java_gateway
+        zabbix_proxy_mysql
+        option=$(echo ${GV_VERSION} | cut -c 1)
+        case ${option} in
+            5)
+            echo "zabbix 5 LTSC!"
+            ;;
+            6)
+            echo "zabbix 6 LTSC!"
+            zabbix_web_service
+            ;;
+            *)
+            echo "Nothing to do"
+            ;;
+        esac
+        exit 1
+    fi
+    
+    if [[ "$1" == "build" ]]; then
+        docker-compose -f docker-compose_v6_0_x_centos_mysql_local.yaml --profile=build build
+        exit 1
+    fi
+    
+    if [[ "$1" == "make" ]]; then
+        option=$(echo ${GV_VERSION} | cut -c 1)
+        case ${option} in
+            5)
+            echo "zabbix 5 LTSC!"
+            docker-compose -f docker-compose_v6_0_x_centos_mysql_local.yaml --profile=make5 build
+            ;;
+            6)
+            echo "zabbix 6 LTSC!"
+            docker-compose -f docker-compose_v6_0_x_centos_mysql_local.yaml --profile=make6 build
+            ;;
+            *)
+            echo "Nothing to do"
+            ;;
+        esac
+        exit 1
+    fi
+    
+    if [[ "$1" == "zabbix-web-nginx-mysql" ]]; then
+        docker-compose -f docker-compose_v6_0_x_centos_mysql_local.yaml --profile=zabbix-web-nginx-mysql build
+        exit 1
+    fi
+    
     if [[ "$1" == "start" ]]; then
-        option=$(echo ${GV_VERSION_DOCKER} | cut -c 1)
+        option=$(echo ${GV_VERSION} | cut -c 1)
         case ${option} in
             5)
             echo "zabbix 5 LTSC!"
@@ -99,6 +385,8 @@ elif [ $# -ge 1 ]; then
             ;;
             6)
             echo "zabbix 6 LTSC!"
+            mkdir -p ./zbx_env/etc/mysql/conf.d
+            \cp ./patch/my.cnf ./zbx_env/etc/mysql/my.cnf
             docker-compose -f docker-compose_v6_0_x_centos_mysql_local.yaml --profile=start6 up -d
             ;;
             *)
@@ -123,13 +411,12 @@ elif [ $# -ge 1 ]; then
         exit 1
     fi
 	
-    if [[ "$1" == "down" ]]; then
-        sh ./patch/down.sh
-        exit 1
-    fi
-	
-    if [[ "$1" == "init" ]]; then
-        init
+    if [[ "$1" == "base" ]]; then
+        docker build -t quay.io/centos/centos:stream8 ./patch
+        docker save -o centos8.tar.gz quay.io/centos/centos:stream8
+        docker rmi $(docker images |grep quay.io/centos/centos | awk -F ' ' '{print $3}')
+        docker load < centos8.tar.gz
+        rm -f centos8.tar.gz
         exit 1
     fi
 fi
