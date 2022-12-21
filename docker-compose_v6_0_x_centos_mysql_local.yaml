@@ -39,15 +39,15 @@ services:
   ports:
    - "10051:10051"
   volumes:
-   - /etc/localtime:/etc/localtime:ro
-   - /etc/timezone:/etc/timezone:ro 
-   - ./zbx_env/usr/lib/zabbix/alertscripts:/usr/lib/zabbix/alertscripts:ro
-   - ./zbx_env/usr/lib/zabbix/externalscripts:/usr/lib/zabbix/externalscripts:ro
+   - /etc/localtime:/etc/localtime:rw
+   - /etc/timezone:/etc/timezone:rw 
+   - ./zbx_env/usr/lib/zabbix/alertscripts:/usr/lib/zabbix/alertscripts:rw
+   - ./zbx_env/usr/lib/zabbix/externalscripts:/usr/lib/zabbix/externalscripts:rw
    - ./zbx_env/var/lib/zabbix/export:/var/lib/zabbix/export:rw
-   - ./zbx_env/var/lib/zabbix/modules:/var/lib/zabbix/modules:ro
-   - ./zbx_env/var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
-   - ./zbx_env/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
-   - ./zbx_env/var/lib/zabbix/mibs:/var/lib/zabbix/mibs:ro
+   - ./zbx_env/var/lib/zabbix/modules:/var/lib/zabbix/modules:rw
+   - ./zbx_env/var/lib/zabbix/enc:/var/lib/zabbix/enc:rw
+   - ./zbx_env/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:rw
+   - ./zbx_env/var/lib/zabbix/mibs:/var/lib/zabbix/mibs:rw
    - snmptraps:/var/lib/zabbix/snmptraps:rw
   ulimits:
    nproc: 65535
@@ -113,13 +113,13 @@ services:
   ports:
    - "10071:10051"
   volumes:
-   - /etc/localtime:/etc/localtime:ro
-   - /etc/timezone:/etc/timezone:ro
-   - ./zbx_env/usr/lib/zabbix/externalscripts:/usr/lib/zabbix/externalscripts:ro
-   - ./zbx_env/var/lib/zabbix/modules:/var/lib/zabbix/modules:ro
-   - ./zbx_env/var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
-   - ./zbx_env/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
-   - ./zbx_env/var/lib/zabbix/mibs:/var/lib/zabbix/mibs:ro
+   - /etc/localtime:/etc/localtime:rw
+   - /etc/timezone:/etc/timezone:rw
+   - ./zbx_env/usr/lib/zabbix/externalscripts:/usr/lib/zabbix/externalscripts:rw
+   - ./zbx_env/var/lib/zabbix/modules:/var/lib/zabbix/modules:rw
+   - ./zbx_env/var/lib/zabbix/enc:/var/lib/zabbix/enc:rw
+   - ./zbx_env/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:rw
+   - ./zbx_env/var/lib/zabbix/mibs:/var/lib/zabbix/mibs:rw
    - snmptraps:/var/lib/zabbix/snmptraps:rw
   ulimits:
    nproc: 65535
@@ -185,10 +185,10 @@ services:
    - "80:8080"
    - "443:8443"
   volumes:
-   - /etc/localtime:/etc/localtime:ro
-   - /etc/timezone:/etc/timezone:ro
-   - ./zbx_env/etc/ssl/nginx:/etc/ssl/nginx:ro
-   - ./zbx_env/usr/share/zabbix/modules/:/usr/share/zabbix/modules/:ro
+   - /etc/localtime:/etc/localtime:rw
+   - /etc/timezone:/etc/timezone:rw
+   - ./zbx_env/etc/ssl/nginx:/etc/ssl/nginx:rw
+   - ./zbx_env/usr/share/zabbix/modules/:/usr/share/zabbix/modules/:rw
   deploy:
    resources:
     limits:
@@ -251,14 +251,14 @@ services:
   ports:
    - "10050:10050"
   volumes:
-   - /etc/localtime:/etc/localtime:ro
-   - /etc/timezone:/etc/timezone:ro
-   - /var/run/docker.sock:/var/run/docker.sock:ro
+   - /etc/localtime:/etc/localtime:rw
+   - /etc/timezone:/etc/timezone:rw
+   - /var/run/docker.sock:/var/run/docker.sock:rw
    - ./zbx_env/etc/zabbix/zabbix_agentd.d:/etc/zabbix/zabbix_agentd.d:rw
    - ./zbx_env/etc/zabbix/scripts:/etc/zabbix/scripts:rw
-   - ./zbx_env/var/lib/zabbix/modules:/var/lib/zabbix/modules:ro
-   - ./zbx_env/var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
-   - ./zbx_env/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
+   - ./zbx_env/var/lib/zabbix/modules:/var/lib/zabbix/modules:rw
+   - ./zbx_env/var/lib/zabbix/enc:/var/lib/zabbix/enc:rw
+   - ./zbx_env/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:rw
   deploy:
    resources:
     limits:
@@ -303,8 +303,8 @@ services:
    - start5
    - start6
   volumes:
-   - /etc/localtime:/etc/localtime:ro
-   - /etc/timezone:/etc/timezone:ro
+   - /etc/localtime:/etc/localtime:rw
+   - /etc/timezone:/etc/timezone:rw
   ports:
    - "10052:10052"
   deploy:
@@ -347,8 +347,8 @@ services:
    - "162:1162/udp"
   volumes:
    - snmptraps:/var/lib/zabbix/snmptraps:rw
-   - /etc/localtime:/etc/localtime:ro
-   - /etc/timezone:/etc/timezone:ro
+   - /etc/localtime:/etc/localtime:rw
+   - /etc/timezone:/etc/timezone:rw
   deploy:
    resources:
     limits:
@@ -384,9 +384,9 @@ services:
   ports:
    - "10053:10053"
   volumes:
-   - ./zbx_env/var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
-   - /etc/localtime:/etc/localtime:ro
-   - /etc/timezone:/etc/timezone:ro
+   - ./zbx_env/var/lib/zabbix/enc:/var/lib/zabbix/enc:rw
+   - /etc/localtime:/etc/localtime:rw
+   - /etc/timezone:/etc/timezone:rw
   cap_add:
    - SYS_ADMIN
   deploy:
@@ -433,7 +433,7 @@ services:
   volumes:
    - ./zbx_env/var/lib/mysql:/var/lib/mysql:rw
    - ./zbx_env/etc/mysql:/etc/mysql:rw
-   - /etc/localtime:/etc/localtime:ro
+   - /etc/localtime:/etc/localtime:rw
   env_file:
    - ./env_vars/.env_db_mysql
   secrets:
@@ -444,15 +444,12 @@ services:
 #   - server-cert.pem
 #   - root-ca.pem
   stop_grace_period: 1m
-  ports:
-   - "3306:3306"
   networks:
    zbx_net_frontend:
     aliases:
      - mysql-server
      - zabbix-database
      - mysql-database
-   zbx_net_backend:
 
 # elasticsearch:
 #  image: elasticsearch
