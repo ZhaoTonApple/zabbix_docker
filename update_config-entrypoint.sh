@@ -99,6 +99,8 @@ elif [ $# -ge 1 ]; then
             ;;
             6)
             echo "zabbix 6 LTSC!"
+            mkdir -p ./zbx_env/etc/mysql/conf.d
+            \cp ./patch/my.cnf ./zbx_env/etc/mysql/my.cnf
             docker-compose -f docker-compose_v6_0_x_centos_mysql_local.yaml --profile=start6 up -d
             ;;
             *)
