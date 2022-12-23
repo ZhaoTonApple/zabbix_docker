@@ -421,6 +421,8 @@ services:
    - make6
    - start5
    - start6
+  ports:
+   - "3306:3306"
   command:
    - mysqld
    - --character-set-server=utf8mb4
@@ -446,11 +448,12 @@ services:
 #   - root-ca.pem
   stop_grace_period: 1m
   networks:
-   zbx_net_frontend:
+   zbx_net_backend:
     aliases:
      - mysql-server
      - zabbix-database
      - mysql-database
+   zbx_net_frontend:
 
 # elasticsearch:
 #  image: elasticsearch
