@@ -254,8 +254,6 @@ services:
    - /etc/localtime:/etc/localtime:rw
    - /etc/timezone:/etc/timezone:rw
    - /var/run/docker.sock:/var/run/docker.sock:rw
-   - ./zbx_env/etc/zabbix/zabbix_agentd.d:/etc/zabbix/zabbix_agentd.d:rw
-   - ./zbx_env/etc/zabbix/scripts:/etc/zabbix/scripts:rw
    - ./zbx_env/var/lib/zabbix/modules:/var/lib/zabbix/modules:rw
    - ./zbx_env/var/lib/zabbix/enc:/var/lib/zabbix/enc:rw
    - ./zbx_env/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:rw
@@ -270,7 +268,6 @@ services:
    mode: global
   env_file:
    - ./env_vars/.env_agent2
-  privileged: true
   pid: "host"
   depends_on:
     - zabbix-build-mysql
