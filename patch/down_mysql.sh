@@ -1,7 +1,7 @@
 GV_VERSION=$(cat ./patch/.version_docker)
 VERSION=centos-${GV_VERSION}
 ADDRESS=registry.cn-shanghai.aliyuncs.com/zabbix_docker/zabbix_chinese
-for IM in `cat ./patch/.images`
+for IM in `cat ./patch/.images_mysql`
 do
 docker pull ${ADDRESS}:${IM}_${VERSION}
 docker tag ${ADDRESS}:${IM}_${VERSION} ${IM}:${VERSION}

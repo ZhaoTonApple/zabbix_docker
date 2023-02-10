@@ -9,6 +9,7 @@
 ###
 ### Options:
 ###   help        Show this message.
+###   init down cp start
 
 # 设置了这个选项以后，包含管道命令的语句的返回值，会变成最后一个返回非零的管道命令的返回值。
 set -o pipefail
@@ -19,6 +20,7 @@ set +e
 # Script trace mode
 set -o xtrace
 
+GV_VERSION=$(cat ./patch/.version)
 GV_VERSION_DOCKER=$(cat ./patch/.version_docker)
 
 help() {
@@ -26,7 +28,7 @@ help() {
 }
 
 init() {
-sed -i -e "/:centos-/s/:centos-.*/:centos-${GV_VERSION_DOCKER}/" docker-compose_v6_0_x_centos_mysql_local.yaml
+sed -i -e "/:centos-/s/:centos-.*/:centos-${GV_VERSION_DOCKER}/" docker-compose_v6_0_x_centos_pgsql_local.yaml
 chmod 755 -R ./
 option=$(cat /etc/redhat-release | cut -c 22)
 if [[ " " == "${option}" ]]; then
@@ -62,6 +64,7 @@ case ${option} in
     ;;
 esac
 service docker start
+mkdir /etc/docker
 touch /etc/docker/daemon.json
 cat > /etc/docker/daemon.json << EOF
 {
@@ -95,12 +98,12 @@ elif [ $# -ge 1 ]; then
         case ${option} in
             5)
             echo "zabbix 5 LTSC!"
-            docker-compose -f docker-compose_v6_0_x_centos_mysql_local.yaml --profile=start5 up -d
+            docker-compose -f docker-compose_v6_0_x_centos_pgsql_local.yaml --profile=start5 up -d
             ;;
             6)
             echo "zabbix 6 LTSC!"
-            mkdir -p ./zbx_env/etc/mysql/conf.d
-            \cp -rf ./patch/my.cnf ./zbx_env/etc/mysql/my.cnf
+            mkdir -p ./zbx_env/var/lib/postgresql/data
+            chown -R 1000:1000 ./zbx_env/var/lib/postgresql/data
             ;;
             *)
             echo "Nothing to do"
@@ -114,11 +117,11 @@ elif [ $# -ge 1 ]; then
         case ${option} in
             5)
             echo "zabbix 5 LTSC!"
-            docker-compose -f docker-compose_v6_0_x_centos_mysql_local.yaml --profile=start5 up -d
+            docker-compose -f docker-compose_v6_0_x_centos_pgsql_local.yaml --profile=start5 up -d
             ;;
             6)
             echo "zabbix 6 LTSC!"
-            docker-compose -f docker-compose_v6_0_x_centos_mysql_local.yaml --profile=start6 up -d
+            docker-compose -f docker-compose_v6_0_x_centos_pgsql_local.yaml --profile=start6 up -d
             ;;
             *)
             echo "Nothing to do"
@@ -128,22 +131,22 @@ elif [ $# -ge 1 ]; then
     fi
 
     if [[ "$1" == "stop" ]]; then
-        docker-compose -f docker-compose_v6_0_x_centos_mysql_local.yaml stop
+        docker-compose -f docker-compose_v6_0_x_centos_pgsql_local.yaml stop
         exit 1
     fi
 
     if [[ "$1" == "restart" ]]; then
-        docker-compose -f docker-compose_v6_0_x_centos_mysql_local.yaml restart
+        docker-compose -f docker-compose_v6_0_x_centos_pgsql_local.yaml restart
         exit 1
     fi
 
     if [[ "$1" == "rm" ]]; then
-        docker-compose -f docker-compose_v6_0_x_centos_mysql_local.yaml rm
+        docker-compose -f docker-compose_v6_0_x_centos_pgsql_local.yaml rm
         exit 1
     fi
 
     if [[ "$1" == "down" ]]; then
-        sh ./patch/down.sh
+        sh ./patch/down_pgsql.sh
         exit 1
     fi
 
