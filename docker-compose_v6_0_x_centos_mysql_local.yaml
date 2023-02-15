@@ -411,7 +411,7 @@ services:
    com.zabbix.os: "centos"
 
  mysql-server:
-  image: mysql:8.0
+  image: mariadb:10.5.19-focal
   restart: always
   profiles:
    - make5
@@ -431,7 +431,7 @@ services:
 #   - --ssl-key=/run/secrets/server-key.pem
   volumes:
    - ./zbx_env/var/lib/mysql:/var/lib/mysql:rw
-   - ./zbx_env/var/lib/mysql-files:/var/lib/mysql-files:rw
+#   - ./zbx_env/var/lib/mysql-files:/var/lib/mysql-files:rw
    - ./zbx_env/etc/mysql:/etc/mysql:rw
    - /etc/localtime:/etc/localtime:rw
   env_file:

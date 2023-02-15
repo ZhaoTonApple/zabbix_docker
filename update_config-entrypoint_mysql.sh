@@ -9,6 +9,7 @@
 ###
 ### Options:
 ###   help        Show this message.
+###   init down cp start
 
 # 设置了这个选项以后，包含管道命令的语句的返回值，会变成最后一个返回非零的管道命令的返回值。
 set -o pipefail
@@ -19,6 +20,7 @@ set +e
 # Script trace mode
 set -o xtrace
 
+GV_VERSION=$(cat ./patch/.version)
 GV_VERSION_DOCKER=$(cat ./patch/.version_docker)
 
 help() {
@@ -99,8 +101,8 @@ elif [ $# -ge 1 ]; then
             ;;
             6)
             echo "zabbix 6 LTSC!"
-            mkdir -p ./zbx_env/etc/mysql/conf.d
-            \cp -rf ./patch/my.cnf ./zbx_env/etc/mysql/my.cnf
+#            mkdir -p ./zbx_env/etc/mysql/conf.d
+#            \cp -rf ./patch/my.cnf ./zbx_env/etc/mysql/my.cnf
             ;;
             *)
             echo "Nothing to do"
