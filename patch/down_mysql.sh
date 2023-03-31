@@ -12,7 +12,7 @@ echo "docker pull centos_stream8"
 docker pull ${ADDRESS}:centos_stream8
 docker tag ${ADDRESS}:centos_stream8 quay.io/centos/centos:stream8
 docker rmi ${ADDRESS}:centos_stream8
-echo "docker pull 10.5.19-focal"
-docker pull ${ADDRESS}:10.5.19-focal
-docker tag ${ADDRESS}:10.5.19-focal mariadb:10.5.19-focal
-docker rmi ${ADDRESS}:10.5.19-focal
+echo "docker pull 10.10.3"
+docker pull ${ADDRESS}:10.10.3
+docker tag ${ADDRESS}:10.10.3 mariadb:10.10.3
+docker rmi ${ADDRESS}:10.10.3

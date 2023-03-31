@@ -7,7 +7,7 @@ services:
     - centos:centos8
   image: zabbix-build-base:centos-6.0-latest
   profiles:
-   - build
+   - build1
 
  zabbix-build-mysql:
   build:
@@ -18,7 +18,7 @@ services:
     BUILD_BASE_IMAGE: zabbix-build-base:centos-6.0-latest
   image: zabbix-build-mysql:centos-6.0-latest
   profiles:
-   - build
+   - build2
   depends_on:
    - zabbix-build-base
 
@@ -411,7 +411,7 @@ services:
    com.zabbix.os: "centos"
 
  mysql-server:
-  image: mariadb:10.5.19-focal
+  image: mariadb:10.10.3
   restart: always
   profiles:
    - make5

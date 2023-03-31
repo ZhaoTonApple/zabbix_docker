@@ -97,12 +97,13 @@ elif [ $# -ge 1 ]; then
         case ${option} in
             5)
             echo "zabbix 5 LTSC!"
-            docker-compose -f docker-compose_v6_0_x_centos_mysql_local.yaml --profile=start5 up -d
             ;;
             6)
             echo "zabbix 6 LTSC!"
 #            mkdir -p ./zbx_env/etc/mysql/conf.d
 #            \cp -rf ./patch/my.cnf ./zbx_env/etc/mysql/my.cnf
+            mkdir -p ./zbx_env/etc/ssl/nginx
+            \cp -rf ./patch/server.pem ./zbx_env/etc/ssl/nginx/
             ;;
             *)
             echo "Nothing to do"
