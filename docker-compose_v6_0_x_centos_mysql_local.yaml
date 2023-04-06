@@ -411,7 +411,7 @@ services:
    com.zabbix.os: "centos"
 
  mysql-server:
-  image: mariadb:10.10.3
+  image: mariadb:10.11.2
   restart: always
   profiles:
    - make5
