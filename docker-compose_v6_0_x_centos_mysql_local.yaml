@@ -321,6 +321,7 @@ services:
     aliases:
      - zabbix-java-gateway
      - zabbix-java-gateway-centos
+   zbx_net_frontend:
   stop_grace_period: 5s
   labels:
    com.zabbix.description: "Zabbix Java Gateway"
@@ -403,6 +404,7 @@ services:
     aliases:
      - zabbix-web-service
      - zabbix-web-service-centos
+   zbx_net_frontend:
   stop_grace_period: 5s
   labels:
    com.zabbix.description: "Zabbix web service"
