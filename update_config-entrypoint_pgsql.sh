@@ -104,6 +104,7 @@ elif [ $# -ge 1 ]; then
             echo "zabbix 6 LTSC!"
             mkdir -p ./zbx_env/var/lib/postgresql/data
             chown -R 1000:1000 ./zbx_env/var/lib/postgresql/data
+            \cp ./patch/docker-compose-linux-x86_64 /usr/local/bin/docker-compose
             ;;
             *)
             echo "Nothing to do"
