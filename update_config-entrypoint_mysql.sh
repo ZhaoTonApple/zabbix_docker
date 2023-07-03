@@ -101,7 +101,7 @@ elif [ $# -ge 1 ]; then
             6)
             echo "zabbix 6 LTSC!"
 #            mkdir -p ./zbx_env/etc/mysql/conf.d
-#            \cp -rf ./patch/my.cnf ./zbx_env/etc/mysql/my.cnf
+            \cp -rf ./patch/my.cnf ./zbx_env/etc/mysql/my.cnf
             mkdir -p ./zbx_env/etc/ssl/nginx
             \cp -rf ./patch/server.pem ./zbx_env/etc/ssl/nginx/
             \cp ./patch/docker-compose-linux-x86_64 /usr/local/bin/docker-compose
