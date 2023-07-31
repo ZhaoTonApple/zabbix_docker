@@ -101,6 +101,7 @@ elif [ $# -ge 1 ]; then
             6)
             echo "zabbix 6 LTSC!"
 #            mkdir -p ./zbx_env/etc/mysql/conf.d
+            mkdir -p ./zbx_env/etc/mysql
             \cp -rf ./patch/my.cnf ./zbx_env/etc/mysql/my.cnf
             mkdir -p ./zbx_env/etc/ssl/nginx
             \cp -rf ./patch/server.pem ./zbx_env/etc/ssl/nginx/
