@@ -106,6 +106,8 @@ elif [ $# -ge 1 ]; then
             mkdir -p ./zbx_env/etc/ssl/nginx
             \cp -rf ./patch/server.pem ./zbx_env/etc/ssl/nginx/
             \cp ./patch/docker-compose-linux-x86_64 /usr/local/bin/docker-compose
+            mkdir -p ./zbx_env/data/ssl
+            \cp -rf ./patch/server.pem ./zbx_env/data/ssl/
             ;;
             *)
             echo "Nothing to do"

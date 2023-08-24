@@ -469,7 +469,12 @@ services:
    - start6
   ports:
    - '3000:3000'
+  environment:
+   GF_SERVER_PROTOCOL: "https"
+   GF_SERVER_CERT_FILE: "/etc/grafana/ssl/server.pem"
+   GF_SERVER_CERT_KEY: "/etc/grafana/ssl/server.pem"
   volumes:
+   - ./zbx_env/data/ssl:/etc/grafana/ssl:rw
    - ./zbx_env/data:/var/lib/grafana:rw
   networks:
    zbx_net_backend:
