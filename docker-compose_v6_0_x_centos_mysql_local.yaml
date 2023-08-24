@@ -57,11 +57,11 @@ services:
   deploy:
    resources:
     limits:
-      cpus: '0.70'
-      memory: 1G
+      cpus: '0.80'
+      memory: 4G
     reservations:
-      cpus: '0.5'
-      memory: 512M
+      cpus: '0.8'
+      memory: 4G
   env_file:
    - ./env_vars/.env_db_mysql
    - ./env_vars/.env_srv
@@ -129,11 +129,11 @@ services:
   deploy:
    resources:
     limits:
-      cpus: '0.70'
-      memory: 512M
+      cpus: '0.80'
+      memory: 4G
     reservations:
-      cpus: '0.3'
-      memory: 256M
+      cpus: '0.8'
+      memory: 4G
   env_file:
    - ./env_vars/.env_db_mysql_proxy
    - ./env_vars/.env_prx
@@ -192,11 +192,11 @@ services:
   deploy:
    resources:
     limits:
-      cpus: '0.70'
-      memory: 512M
+      cpus: '0.80'
+      memory: 4G
     reservations:
-      cpus: '0.5'
-      memory: 256M
+      cpus: '0.8'
+      memory: 4G
   env_file:
    - ./env_vars/.env_db_mysql
    - ./env_vars/.env_web
@@ -260,11 +260,11 @@ services:
   deploy:
    resources:
     limits:
-      cpus: '0.2'
-      memory: 128M
+      cpus: '0.8'
+      memory: 4G
     reservations:
-      cpus: '0.1'
-      memory: 64M
+      cpus: '0.8'
+      memory: 4G
    mode: global
   env_file:
    - ./env_vars/.env_agent2
@@ -307,11 +307,11 @@ services:
   deploy:
    resources:
     limits:
-      cpus: '0.5'
-      memory: 512M
+      cpus: '0.8'
+      memory: 4G
     reservations:
-      cpus: '0.25'
-      memory: 256M
+      cpus: '0.8'
+      memory: 4G
   env_file:
    - ./env_vars/.env_java
   depends_on:
@@ -350,11 +350,11 @@ services:
   deploy:
    resources:
     limits:
-      cpus: '0.5'
-      memory: 256M
+      cpus: '0.8'
+      memory: 4G
     reservations:
-      cpus: '0.25'
-      memory: 128M
+      cpus: '0.8'
+      memory: 4G
   networks:
    zbx_net_frontend:
     aliases:
@@ -390,11 +390,11 @@ services:
   deploy:
    resources:
     limits:
-      cpus: '0.5'
-      memory: 512M
+      cpus: '0.8'
+      memory: 4G
     reservations:
-      cpus: '0.25'
-      memory: 256M
+      cpus: '0.8'
+      memory: 4G
   env_file:
    - ./env_vars/.env_web_service
   depends_on:
@@ -452,6 +452,30 @@ services:
      - mysql-server
      - zabbix-database
      - mysql-database
+   zbx_net_frontend:
+
+  # if you are running as root then set it to 0
+  # else find the right id with the id -u command
+  # adding the mount volume point which we create earlier
+ grafana:
+  image: grafana/grafana-oss:10.0.0
+  container_name: grafana
+  restart: unless-stopped
+  user: '0'
+  profiles:
+   - make5
+   - make6
+   - start5
+   - start6
+  ports:
+   - '3000:3000'
+  volumes:
+   - ./zbx_env/data:/var/lib/grafana:rw
+  networks:
+   zbx_net_backend:
+    aliases:
+     - grafana-server
+     - grafana
    zbx_net_frontend:
 
 # elasticsearch:
