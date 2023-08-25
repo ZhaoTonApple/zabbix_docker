@@ -108,6 +108,8 @@ elif [ $# -ge 1 ]; then
             \cp ./patch/docker-compose-linux-x86_64 /usr/local/bin/docker-compose
             mkdir -p ./zbx_env/data/ssl
             \cp -rf ./patch/server.pem ./zbx_env/data/ssl/
+            mkdir -p ./zbx_env/data/plugins
+            tar -zxf ./patch/alexanderzobnin-zabbix-app-*.tar.gz -C ./zbx_env/data/plugins
             ;;
             *)
             echo "Nothing to do"

@@ -458,7 +458,7 @@ services:
   # else find the right id with the id -u command
   # adding the mount volume point which we create earlier
  grafana:
-  image: grafana/grafana-oss:10.0.0
+  image: grafana/grafana-enterprise:10.1.0
   container_name: grafana
   restart: unless-stopped
   user: '0'
@@ -476,6 +476,7 @@ services:
   volumes:
    - ./zbx_env/data/ssl:/etc/grafana/ssl:rw
    - ./zbx_env/data:/var/lib/grafana:rw
+   - ./zbx_env/data/plugins:/var/lib/grafana/plugins:rw
   networks:
    zbx_net_backend:
     aliases:
