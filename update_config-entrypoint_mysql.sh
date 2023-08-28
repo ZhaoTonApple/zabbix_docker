@@ -116,10 +116,10 @@ elif [ $# -ge 1 ]; then
             \cp -rf ./patch/promtail-config.yaml ./zbx_env/promtail/config
             mkdir -p ./zbx_env/promtail/log
             \cp ./patch/loki.conf /etc/rsyslog.d/
-            sed -i -e "/^\# module(load=\"imudp\")/s/^# //" /etc/rsyslog.conf
-            sed -i -e "/^\# input(type=\"imudp\"/s/^# //" /etc/rsyslog.conf
-            sed -i -e "/^\# module(load=\"imtcp\")/s/^# //" /etc/rsyslog.conf
-            sed -i -e "/^\# input(type=\"imtcp\"/s/^# //" /etc/rsyslog.conf
+            sed -i -e "/^\#module(load=\"imudp\")/s/^#//" /etc/rsyslog.conf
+            sed -i -e "/^\#input(type=\"imudp\"/s/^#//" /etc/rsyslog.conf
+            sed -i -e "/^\#module(load=\"imtcp\")/s/^#//" /etc/rsyslog.conf
+            sed -i -e "/^\#input(type=\"imtcp\"/s/^#//" /etc/rsyslog.conf
             sed -i -e "/^\module(load=\"builtin:omfile\"/s/^\(.*\)$/# \1/" /etc/rsyslog.conf
             systemctl restart rsyslog
             ;;
