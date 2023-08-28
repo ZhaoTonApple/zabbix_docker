@@ -110,6 +110,18 @@ elif [ $# -ge 1 ]; then
             \cp -rf ./patch/server.pem ./zbx_env/data/ssl/
             mkdir -p ./zbx_env/data/plugins
             tar -zxf ./patch/alexanderzobnin-zabbix-app-*.tar.gz -C ./zbx_env/data/plugins
+            mkdir -p ./zbx_env/loki/config
+            \cp -rf ./patch/loki-config.yaml ./zbx_env/loki/config
+            mkdir -p ./zbx_env/promtail/config
+            \cp -rf ./patch/promtail-config.yaml ./zbx_env/promtail/config
+            mkdir -p ./zbx_env/promtail/log
+            \cp ./patch/loki.conf /etc/rsyslog.d/
+            sed -i -e "/^\# module(load=\"imudp\")/s/^# //" /etc/rsyslog.conf
+            sed -i -e "/^\# input(type=\"imudp\"/s/^# //" /etc/rsyslog.conf
+            sed -i -e "/^\# module(load=\"imtcp\")/s/^# //" /etc/rsyslog.conf
+            sed -i -e "/^\# input(type=\"imtcp\"/s/^# //" /etc/rsyslog.conf
+            sed -i -e "/^\module(load=\"builtin:omfile\"/s/^\(.*\)$/# \1/" /etc/rsyslog.conf
+            systemctl restart rsyslog
             ;;
             *)
             echo "Nothing to do"

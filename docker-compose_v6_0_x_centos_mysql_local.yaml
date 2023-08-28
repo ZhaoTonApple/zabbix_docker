@@ -484,6 +484,55 @@ services:
      - grafana
    zbx_net_frontend:
 
+ loki:
+  image: grafana/loki:2.8.4
+  container_name: loki
+  restart: unless-stopped
+  user: '0'
+  profiles:
+   - make5
+   - make6
+   - start5
+   - start6
+  ports:
+   - '3100:3100'
+  command: -config.file=/mnt/config/loki-config.yaml
+  # environment:
+   # GF_SERVER_PROTOCOL: "https"
+   # GF_SERVER_CERT_FILE: "/etc/grafana/ssl/server.pem"
+   # GF_SERVER_CERT_KEY: "/etc/grafana/ssl/server.pem"
+  volumes:
+   - ./zbx_env/loki/config:/mnt/config:rw
+  networks:
+   zbx_net_backend:
+    aliases:
+     - loki-server
+     - loki
+   zbx_net_frontend:
+   
+ promtail:
+  image: grafana/promtail:2.8.4
+  restart: unless-stopped
+  user: '0'
+  profiles:
+   - make5
+   - make6
+   - start5
+   - start6
+  volumes:
+    # chmod a+rw /var/run/docker.sock
+   - /var/run/docker.sock:/var/run/docker.sock:rw
+   - ./zbx_env/promtail/config:/mnt/config:rw
+   - ./zbx_env/promtail/log:/var/log:rw
+  command: -config.file=/mnt/config/promtail-config.yaml
+  networks:
+   zbx_net_backend:
+    aliases:
+     - promtail-server
+     - promtail
+   zbx_net_frontend:
+
+
 # elasticsearch:
 #  image: elasticsearch
 #  profiles:
