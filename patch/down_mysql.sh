@@ -16,3 +16,9 @@ docker rmi ${ADDRESS}:mariadb
 docker pull ${ADDRESS}:grafana_grafana-enterprise
 docker tag ${ADDRESS}:grafana_grafana-enterprise grafana/grafana-enterprise:10.1.0
 docker rmi ${ADDRESS}:grafana_grafana-enterprise
+docker pull ${ADDRESS}:grafana_loki
+docker tag ${ADDRESS}:grafana_loki grafana/loki:2.8.4
+docker rmi ${ADDRESS}:grafana_loki
+docker pull ${ADDRESS}:grafana_promtail
+docker tag ${ADDRESS}:grafana_promtail grafana/promtail:2.8.4
+docker rmi ${ADDRESS}:grafana_promtail
