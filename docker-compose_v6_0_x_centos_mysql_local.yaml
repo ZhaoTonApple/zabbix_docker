@@ -523,7 +523,7 @@ services:
     # chmod a+rw /var/run/docker.sock
    - /var/run/docker.sock:/var/run/docker.sock:rw
    - ./zbx_env/promtail/config:/mnt/config:rw
-   - ./zbx_env/promtail/log:/var/log:rw
+   - /var/log/loki:/var/log/loki:rw
   command: -config.file=/mnt/config/promtail-config.yaml
   networks:
    zbx_net_backend:

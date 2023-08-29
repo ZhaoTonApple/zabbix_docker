@@ -114,7 +114,9 @@ elif [ $# -ge 1 ]; then
             \cp -rf ./patch/loki-config.yaml ./zbx_env/loki/config
             mkdir -p ./zbx_env/promtail/config
             \cp -rf ./patch/promtail-config.yaml ./zbx_env/promtail/config
-            mkdir -p ./zbx_env/promtail/log
+            mkdir -p /var/log/loki
+            chmod 755 /var/log/loki
+            sed -i -e "/^\      __path__:/s/:.*/: \/var\/log\/loki\/\*log/" /etc/promtail/config.yml
             \cp ./patch/loki.conf /etc/rsyslog.d/
             sed -i -e "/^\#module(load=\"imudp\")/s/^#//" /etc/rsyslog.conf
             sed -i -e "/^\#input(type=\"imudp\"/s/^#//" /etc/rsyslog.conf
