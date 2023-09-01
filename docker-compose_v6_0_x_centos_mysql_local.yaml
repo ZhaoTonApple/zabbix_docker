@@ -174,6 +174,7 @@ services:
    args:
     BUILD_BASE_IMAGE: zabbix-build-mysql:centos-6.0-latest
   image: zabbix-web-nginx-mysql:centos-6.0-latest
+  container_name: zbx-web-nginx-mysql
   restart: always
   profiles:
    - zabbix-web-nginx-mysql
@@ -242,6 +243,7 @@ services:
    args:
     BUILD_BASE_IMAGE: zabbix-build-mysql:centos-6.0-latest
   image: zabbix-agent2:centos-6.0-latest
+  container_name: zbx-agent2
   restart: always
   profiles:
    - make5
@@ -293,6 +295,7 @@ services:
    args:
     BUILD_BASE_IMAGE: zabbix-build-mysql:centos-6.0-latest
   image: zabbix-java-gateway:centos-6.0-latest
+  container_name: zbx-java-gateway
   restart: always
   profiles:
    - make5
@@ -335,6 +338,7 @@ services:
    cache_from:
     - centos:centos8
   image: zabbix-snmptraps:centos-6.0-latest
+  container_name: zbx-snmptraps
   restart: always
   profiles:
    - make5
@@ -375,6 +379,7 @@ services:
    args:
     BUILD_BASE_IMAGE: zabbix-build-mysql:centos-6.0-latest
   image: zabbix-web-service:centos-6.0-latest
+  container_name: zbx-web-service
   restart: always
   profiles:
    - make6
@@ -414,6 +419,7 @@ services:
 
  mysql-server:
   image: mariadb:10.11.2
+  container_name: zbx-mariadb
   restart: always
   profiles:
    - make5
@@ -459,7 +465,7 @@ services:
   # adding the mount volume point which we create earlier
  grafana:
   image: grafana/grafana-enterprise:10.1.0
-  container_name: grafana
+  container_name: zbx-grafana
   restart: unless-stopped
   user: '0'
   profiles:
@@ -486,7 +492,7 @@ services:
 
  loki:
   image: grafana/loki:2.8.4
-  container_name: loki
+  container_name: zbx-loki
   restart: unless-stopped
   user: '0'
   profiles:
@@ -512,6 +518,7 @@ services:
    
  promtail:
   image: grafana/promtail:2.8.4
+  container_name: zbx-promtail
   restart: unless-stopped
   user: '0'
   profiles:
