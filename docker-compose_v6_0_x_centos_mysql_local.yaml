@@ -183,8 +183,8 @@ services:
    - start5
    - start6
   ports:
-   - "80:8080"
-   - "443:8443"
+   - "8080:8080"
+   - "8443:8443"
   volumes:
    - /etc/localtime:/etc/localtime:rw
    - /etc/timezone:/etc/timezone:rw
