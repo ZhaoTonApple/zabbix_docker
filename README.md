@@ -1,10 +1,9 @@
-# zabbix_docker
-
 -#################################-
-
 ----------**mysql分区+全中文模板**-------------
-
 -#################################-
+
+**项目地址**
+[GitHub项目地址](https://github.com/NoYoWiFi/zabbix_docker)
 
 **效果图**
 
@@ -86,21 +85,48 @@ sh update_config-entrypoint_mysql.sh start
 ```
 
 **打开网页输入服务器IP地址访问zabbix**
-
+http://IP:8080 或 https://IP:8443
 用户名: Admin
 密码: zabbix
+
+**打开网页输入服务器IP地址访问grafana**
+https://IP:3000
+用户名: admin
+密码: admin
+
+**zabbix-server服务器同时优化成了rsyslog日志服务器，rsyslog日志端口为514**
+日志存储路径为 /var/log/loki/
+
+**grafana优化集成了zabbix与Loki插件**
+请将任意.log后缀日志存入 /var/log/loki/即可连接到loki
+URL为http://IP:3100
+![在这里插入图片描述](https://img-blog.csdnimg.cn/e6c1805fdf054b1080066002c64bee17.png)
 
 **存储位置**
 
 映射的卷位于当前文件夹的zbx_env目录
 
+**zabbix-server配置文件位置**
+`/opt/zabbix_docker-6.0-latest/env_vars/.env_srv`
 
 **后期如果有新版本发布可以通过如下命令更新zabbix版本**
 
 ```
 sh update_config-entrypoint_mysql.sh stop
+
+ZBX_SOURCES=https://NoYoWiFi:agp_66c5fe553765c414b8de0886f668b5f7@codeup.aliyun.com/636defa3f003e3b7bb5cae22/zabbix_docker/zabbix_chinese.git
+ZBX_VERSION=6.0-latest
+ZBX_NAME=zabbix_docker-${ZBX_VERSION}
+ZBX_DIR=/opt
+cd ${ZBX_DIR}
+git -c advice.detachedHead=false pull ${ZBX_SOURCES} --branch ${ZBX_VERSION} --depth 1 --single-branch ${ZBX_DIR}/${ZBX_NAME}
+chmod 755 -R ${ZBX_DIR}/${ZBX_NAME}
+cd ${ZBX_DIR}/${ZBX_NAME}
+
 sh update_config-entrypoint_mysql.sh down
+
 sh update_config-entrypoint_mysql.sh start
 ```
+
 
 **全文完结**
