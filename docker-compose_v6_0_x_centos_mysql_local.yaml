@@ -30,6 +30,7 @@ services:
    args:
     BUILD_BASE_IMAGE: zabbix-build-mysql:centos-6.0-latest
   image: zabbix-server-mysql:centos-6.0-latest
+  container_name: zbx-server
   restart: always
   profiles:
    - make5
@@ -427,7 +428,7 @@ services:
    - start5
    - start6
   ports:
-   - "3306:3306"
+   - "13306:3306"
   command:
    - mysqld
    - --character-set-server=utf8mb4
